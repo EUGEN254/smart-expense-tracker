@@ -17,11 +17,11 @@ const App = () => {
       <Toaster />
       <Routes>
         {/* Public Routes */}
-        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<Auth />} />
         
         {/* other routes*/}
-        <Route path="/" element={<Home />}>
+        <Route path="/home" element={<Home />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="analytics" element={<Analytics />} />
