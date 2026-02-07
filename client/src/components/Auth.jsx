@@ -1,56 +1,41 @@
-import React, { useState } from "react";
+// components/Auth.jsx
+import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/index.js";
 
 const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
-  const [isLogin, setIsLogin] = useState(initialMode === "login");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const {
+    // State
+    isLogin,
+    termsAccepted,
+    formLoading,
+    formData,
+    showPassword,
+    showConfirmPassword,
+    errors,
+    successMessage,
+    generalError,
+    
+    // Actions
+    setTermsAccepted,
+    handleChange,
+    handleSubmit,
+    handleGoogleAuth,
+    handleToggleMode,
+    handleClose,
+    togglePasswordVisibility,
+    toggleConfirmPasswordVisibility,
+  } = useAuth(initialMode, onClose, onToggleMode);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+ 
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-    console.log("Form submitted:", formData);
-  };
-
-  const handleGoogleAuth = () => {
-    console.log("Continue with Google");
-  };
-
-  const handleToggleMode = () => {
-    setIsLogin(!isLogin);
-    if (onToggleMode) {
-      onToggleMode();
-    }
-  };
-
-  const handleClose = () => {
-    if (onClose) {
-      onClose();
-    }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+  // Helper function to get input class based on error state
+  const getInputClass = (fieldName) => {
+    const baseClass = "w-full px-3 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors outline-none";
+    const errorClass = errors[fieldName] 
+      ? "border-red-500 bg-red-50" 
+      : "border-gray-300";
+    return `${baseClass} ${errorClass}`;
   };
 
   return (
@@ -63,10 +48,26 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
               {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
             <p className="mt-1 text-sm text-gray-600">
-              {isLogin ? "Sign in to your account" : "Start your journey with us"}
+              {isLogin
+                ? "Sign in to your account"
+                : "Start your journey with us"}
             </p>
           </div>
         </div>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mx-8 mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700 text-center">{successMessage}</p>
+          </div>
+        )}
+
+        {/* General Error Message */}
+        {generalError && (
+          <div className="mx-8 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700 text-center">{generalError}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form className="px-8 pb-8 space-y-5" onSubmit={handleSubmit}>
@@ -108,9 +109,12 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                   required={!isLogin}
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors outline-none"
+                  className={getInputClass("name")}
                   placeholder="Your name"
                 />
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-600">{errors.name}</p>
+                )}
               </div>
             )}
 
@@ -129,9 +133,12 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors outline-none"
+                className={getInputClass("email")}
                 placeholder="you@example.com"
               />
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+              )}
             </div>
 
             {/* Password field with eye icon */}
@@ -150,7 +157,7 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors outline-none"
+                  className={getInputClass("password")}
                   placeholder="••••••••"
                 />
                 <button
@@ -195,6 +202,9 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+              )}
             </div>
 
             {/* Confirm Password with eye icon - only for signup */}
@@ -214,7 +224,7 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                     required={!isLogin}
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors outline-none"
+                    className={getInputClass("confirmPassword")}
                     placeholder="••••••••"
                   />
                   <button
@@ -259,6 +269,39 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
                     )}
                   </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
+            {/* Terms Checkbox */}
+            {!isLogin && (
+              <div className="flex items-start space-x-2">
+                <input
+                  id="terms"
+                  type="checkbox"
+                  required
+                  disabled={formLoading}
+                  checked={termsAccepted}
+                  onChange={() =>
+                    !formLoading && setTermsAccepted(!termsAccepted)
+                  }
+                  className={`mt-0.5 h-4 w-4 focus:ring-blue-500 border rounded ${
+                    formLoading 
+                      ? 'bg-gray-100 border-gray-300' 
+                      : 'text-blue-600 border-gray-300'
+                  }`}
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600">
+                  I agree to the{" "}
+                  <Link
+                    to="/terms-conditions"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Terms and Conditions
+                  </Link>
+                </label>
               </div>
             )}
           </div>
@@ -292,9 +335,41 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
           {/* Submit button */}
           <button
             type="submit"
-            className="w-full py-2.5 px-4 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            disabled={formLoading}
+            className={`w-full py-2.5 px-4 text-white text-sm font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 ${
+              formLoading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-gray-600 hover:bg-gray-700'
+            }`}
           >
-            {isLogin ? "Sign In" : "Create Account"}
+            {formLoading ? (
+              <>
+                <svg
+                  className="animate-spin h-4 w-4 mr-2 text-white inline"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                Processing...
+              </>
+            ) : isLogin ? (
+              "Sign In"
+            ) : (
+              "Create Account"
+            )}
           </button>
 
           {/* Divider */}
@@ -347,7 +422,12 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
               <button
                 type="button"
                 onClick={handleToggleMode}
-                className="text-gray-600 hover:text-gray-500 font-medium transition-colors"
+                disabled={formLoading}
+                className={`text-gray-600 font-medium transition-colors ${
+                  formLoading
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:text-gray-500'
+                }`}
               >
                 {isLogin ? "Sign up" : "Sign in"}
               </button>
@@ -358,11 +438,17 @@ const Auth = ({ onClose, initialMode = "login", onToggleMode }) => {
           {!isLogin && (
             <p className="text-xs text-gray-500 text-center leading-tight">
               By creating an account, you agree to our{" "}
-              <Link to="/terms" className="text-blue-600 hover:text-blue-500 transition-colors">
+              <Link
+                to="/terms"
+                className="text-blue-600 hover:text-blue-500 transition-colors"
+              >
                 Terms
               </Link>{" "}
               and{" "}
-              <Link to="/privacy" className="text-blue-600 hover:text-blue-500 transition-colors">
+              <Link
+                to="/privacy"
+                className="text-blue-600 hover:text-blue-500 transition-colors"
+              >
                 Privacy Policy
               </Link>
             </p>

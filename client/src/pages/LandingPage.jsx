@@ -1,14 +1,18 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import assets from "../assets/assets";
+import { Link, useNavigate } from "react-router-dom";
+import { User, ChevronDown, Settings, LogOut } from "lucide-react";
 import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import Auth from "../components/Auth";
+import { useUser } from "../context/UserContext";
 
 const LandingPage = () => {
   const navLinks = ["Home", "Features", "Pricing", "Contact"];
   const [authOpen, setAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState("login"); // "login" or "signup"
+  const [authMode, setAuthMode] = useState("login");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
 
   const openAuth = (mode) => {
     setAuthMode(mode);
@@ -17,6 +21,12 @@ const LandingPage = () => {
 
   const closeAuth = () => {
     setAuthOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
+    navigate("/");
   };
 
   return (
@@ -48,21 +58,87 @@ const LandingPage = () => {
               ))}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => openAuth("login")}
-                className="px-4 py-2 text-black hover:border-gray-200 rounded-lg hover:bg-gray-200 font-medium transition-colors duration-200 text-sm"
-              >
-                Sign in
-              </button>
-              <button 
-                className="px-4 py-2 text-black border rounded-lg border-gray-300 hover:bg-gray-300 font-medium transition-colors duration-200 text-sm"
-                onClick={() => openAuth("signup")}
-              >
-                Get Started
-              </button>
-            </div>
+            {user ? (
+              <div className="relative flex items-center gap-4">
+                <Link
+                  to="/dashboard"
+                  className="px-4 py-2 text-black hover:border-gray-200 rounded-lg hover:bg-gray-200 font-medium transition-colors duration-200 text-sm"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center space-x-2 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    {user?.image ? (
+                      <img
+                        src={user.image}
+                        alt="User"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-4 h-4 text-gray-600" />
+                    )}
+                  </div>
+
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-500 transition-transform ${
+                      showDropdown ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showDropdown && (
+                  <div className="absolute -right-1 top-11.5 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="font-medium text-gray-800">
+                        {user?.fullname}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        navigate("/settings");
+                        setShowDropdown(false);
+                      }}
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-gray-700 hover:bg-gray-50 text-sm"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </button>
+
+                    <div className="border-t border-gray-100 my-1"></div>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 text-sm"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => openAuth("login")}
+                  className="px-4 py-2 text-black hover:border-gray-200 rounded-lg hover:bg-gray-200 font-medium transition-colors duration-200 text-sm"
+                >
+                  Sign in
+                </button>
+                <button
+                  className="px-4 py-2 text-black border rounded-lg border-gray-300 hover:bg-gray-300 font-medium transition-colors duration-200 text-sm"
+                  onClick={() => openAuth("signup")}
+                >
+                  Get Started
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -79,22 +155,17 @@ const LandingPage = () => {
 
       {/* Auth Modal Overlay */}
       {authOpen && (
-        <div className="fixed inset-0  overflow-y-auto z-50">
-          {/* Backdrop */}
-          <div 
-            onClick={closeAuth}
-          />
-          
-          {/* Modal Container */}
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div onClick={closeAuth} className="fixed inset-0 bg-black/50" />
+
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-transparent transform overflow-hidden rounded-lg shadow-xl transition-all w-full max-w-md">
-             
-              
-              {/* Auth Component */}
-              <Auth 
+              <Auth
                 initialMode={authMode}
                 onClose={closeAuth}
-                onToggleMode={() => setAuthMode(authMode === "login" ? "signup" : "login")}
+                onToggleMode={() =>
+                  setAuthMode(authMode === "login" ? "signup" : "login")
+                }
               />
             </div>
           </div>
