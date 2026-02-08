@@ -25,3 +25,6 @@ dist-ssr
 *.bak
 *.tmp
 *.temp  
+
+backend/.env
+client/.env
