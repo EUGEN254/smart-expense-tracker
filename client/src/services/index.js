@@ -1,4 +1,5 @@
 // services/index.js
-export { authService } from './authService';
-export {categoryService} from './categoryService';
-export {transactionService} from './transactionService';
+export { authService } from "./authService";
+export { categoryService } from "./categoryService";
+export { transactionService } from "./transactionService";
+export { budgetService } from "./budgetService";

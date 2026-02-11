@@ -7,6 +7,7 @@ import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/userRoutes.js";
 import categoriesRouter from "./routes/categoriesRoutes.js";
 import transactionRouter from "./routes/transactionRoutes.js";
+import budgetRouter from "./routes/budgetRoutes.js";
 
 // express setup
 const app = express();
@@ -39,9 +40,10 @@ app.get("/", (req, res) => {
 });
 
 // rest of routes
-app.use('/api/auth',userRouter);
-app.use('/api/categories',categoriesRouter);
+app.use("/api/auth", userRouter);
+app.use("/api/categories", categoriesRouter);
 app.use("/api/transactions", transactionRouter);
+app.use("/api/budget", budgetRouter);
 
 // connect to database
 await connectDB();
