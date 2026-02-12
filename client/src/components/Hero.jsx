@@ -2,7 +2,7 @@ import React from "react";
 import assets from "../assets/assets";
 import { useUser } from "../context/UserContext";
 
-const Hero = () => {
+const Hero = ({ openAuth }) => {
   const { user } = useUser();
   return (
     <div className="min-h-screen pt-9">
@@ -30,7 +30,10 @@ const Hero = () => {
             {/* CTA Button */}
             <div className="flex flex-col sm:flex-row gap-4">
               {!user && (
-                <button className="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-700 hover:to-gray-800  hover:shadow-lg shadow-md">
+                <button
+                  onClick={() => openAuth("signup")}
+                  className="px-8 py-3 bg-gradient-to-r from-gray-600 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-700 hover:to-gray-800  hover:shadow-lg shadow-md"
+                >
                   Get Started Free
                 </button>
               )}

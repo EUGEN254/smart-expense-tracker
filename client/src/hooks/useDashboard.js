@@ -1,12 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { transactionService } from "../services";
 import { useUser } from "../context/UserContext";
 
 export const useDashboard = () => {
   const [addTransaction, setAddTransaction] = useState(false);
-  const[isTransactionLoading,setIsTransactionLoading] = useState(false)
+  const [isTransactionLoading, setIsTransactionLoading] = useState(false);
+  const [dashboardIncome, setDashboardIncome] = useState(null);
   const [currentState, setCurrentState] = useState("Expense");
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [spendingByCategory, setSpendingByCategory] = useState({});
   const { backendUrl } = useUser();
   const [formData, setFormData] = useState({
     description: "",
@@ -32,8 +37,7 @@ export const useDashboard = () => {
       toast.error("Please select a category");
       return;
     }
-    setIsTransactionLoading(true)
-    
+    setIsTransactionLoading(true);
 
     try {
       const res = await transactionService.addTransaction(
@@ -45,13 +49,31 @@ export const useDashboard = () => {
 
       if (res.success) {
         toast.success(`${currentState} ${res.message}`);
+
+        const transaction = res.transaction;
+        const amount = parseFloat(transaction.amount);
+
+        if (transaction.type === "Income") {
+          setTotalIncome((prev) => prev + amount);
+          setTotalBalance((prev) => prev + amount);
+        } else if (transaction.type === "Expense") {
+          setTotalExpense((prev) => prev + amount);
+          setTotalBalance((prev) => prev - amount);
+
+          // Update spending by category for budgets
+          setSpendingByCategory((prev) => ({
+            ...prev,
+            [transaction.category]: (prev[transaction.category] || 0) + amount,
+          }));
+        }
+
         // Reset form
         setFormData({
           description: "",
           amount: "",
           category: "",
         });
-        setIsTransactionLoading(false)
+        setIsTransactionLoading(false);
       } else {
         toast.error(
           res.message || "Failed to add transaction. Please try again.",
@@ -65,6 +87,26 @@ export const useDashboard = () => {
     }
   };
 
+  // Add these functions to your useDashboard hook
+  const fetchDashboardTotals = async () => {
+    try {
+      const res = await transactionService.getDashboardTotals(backendUrl);
+
+      if (res.success) {
+        setTotalIncome(res.data.income);
+        setTotalExpense(res.data.expense);
+        setTotalBalance(res.data.balance);
+        setSpendingByCategory(res.data.spendingByCategory || {});
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to get dashboard details");
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardTotals();
+  }, []);
+
   return {
     addTransaction,
     setAddTransaction,
@@ -74,5 +116,15 @@ export const useDashboard = () => {
     setFormData,
     handleAddTransaction,
     isTransactionLoading,
+    dashboardIncome,
+    totalIncome,
+    setTotalIncome,
+    totalExpense,
+    setTotalExpense,
+    totalBalance,
+    setTotalBalance,
+    spendingByCategory,
+    setSpendingByCategory,
+    fetchDashboardTotals,
   };
 };

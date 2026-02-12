@@ -24,4 +24,73 @@ export const transactionService = {
       }
     }
   },
+  async getIncome(backendUrl) {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/transactions/income`,
+        {
+          withCredentials: true,
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Failed to add transaction. Please try again.");
+      }
+    }
+  },
+  async getExpense(backendUrl, token) {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/transactions/expense`,
+        {
+          withCredentials: true,
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Failed to add transaction. Please try again.");
+      }
+    }
+  },
+  async getDashboardTotals(backendUrl) {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/transactions/dashboard/totals`,
+        {
+          withCredentials: true,
+        },
+      );
+      return response.data;
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error("Failed to add transaction. Please try again.");
+      }
+    }
+  },
 };

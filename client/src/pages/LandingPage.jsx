@@ -145,7 +145,7 @@ const LandingPage = () => {
 
       {/* Main Content */}
       <div className="flex-grow pt-16">
-        <Hero />
+        <Hero openAuth={openAuth}/>
       </div>
 
       {/* Footer Section */}

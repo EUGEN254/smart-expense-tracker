@@ -97,3 +97,59 @@ export const addIncome = async (req, res) => {
     });
   }
 };
+
+export const getDashboardTotals = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const [incomeResult, expenseResult, categorySpending] = await Promise.all([
+      Transaction.aggregate([
+        { $match: { user: user._id, type: "Income" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+      Transaction.aggregate([
+        { $match: { user: user._id, type: "Expense" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+      Transaction.aggregate([
+        {
+          $match: {
+            user: user._id,
+            type: "Expense",
+            category: { $exists: true, $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: "$category",
+            total: { $sum: "$amount" },
+          },
+        },
+      ]),
+    ]);
+
+    const income = incomeResult[0]?.total || 0;
+    const expense = expenseResult[0]?.total || 0;
+
+    // Format spending by category
+    const spendingByCategory = {};
+    categorySpending.forEach((item) => {
+      spendingByCategory[item._id] = item.total;
+    });
+
+    res.json({
+      success: true,
+      data: {
+        income,
+        expense,
+        balance: income - expense,
+        spendingByCategory,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

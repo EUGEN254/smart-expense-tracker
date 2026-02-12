@@ -84,11 +84,6 @@ export const useCategory = () => {
     }
   }, [backendUrl]);
 
-  // Fetch categories on initial load
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   return {
     openCategoryForm,
     setOpenCategoryForm,
@@ -100,5 +95,6 @@ export const useCategory = () => {
     isCreating,
     deletingId,
     isLoading,
+    fetchCategories,
   };
 };
